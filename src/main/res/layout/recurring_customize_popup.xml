@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="25dp"
+    android:layout_marginTop="100dp"
+    android:layout_marginRight="25dp"
+    android:layout_marginBottom="100dp"
+    android:background="@android:color/darker_gray"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="bottom"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Every"
+            android:textAlignment="textEnd"
+            android:textSize="22sp" />
+
+        <EditText
+            android:id="@+id/everyIntText"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="number"
+            android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/everyDayWeekMonthYearText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Day"
+            android:textAlignment="viewStart"
+            android:textSize="22sp" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/recurringDaysToggleContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_weight="0.2"
+        android:orientation="horizontal">
+
+        <ToggleButton
+            android:id="@+id/mondayToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textOff="@string/monday"
+            android:textOn="@string/monday" />
+
+        <ToggleButton
+            android:id="@+id/tuesdayToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ToggleButton"
+            android:textOff="@string/tuesday"
+            android:textOn="@string/tuesday" />
+
+        <ToggleButton
+            android:id="@+id/wednesdayToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ToggleButton"
+            android:textOff="@string/wednesday"
+            android:textOn="@string/wednesday" />
+
+        <ToggleButton
+            android:id="@+id/thursdayToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ToggleButton"
+            android:textOff="@string/thursday"
+            android:textOn="@string/thursday" />
+
+        <ToggleButton
+            android:id="@+id/fridayToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ToggleButton"
+            android:textOff="@string/friday"
+            android:textOn="@string/friday" />
+
+        <ToggleButton
+            android:id="@+id/saturdayToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ToggleButton"
+            android:textOff="@string/saturday"
+            android:textOn="@string/saturday" />
+
+        <ToggleButton
+            android:id="@+id/sundayToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ToggleButton"
+            android:textOff="@string/sunday"
+            android:textOn="@string/sunday" />
+    </LinearLayout>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:background="@android:color/black"/>
+
+    <RadioGroup
+        android:id="@+id/foreverUntilRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.2">
+
+        <RadioButton
+            android:id="@+id/foreverRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Forever" />
+
+        <RadioButton
+            android:id="@+id/untilRadioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Until" />
+    </RadioGroup>
+
+    <LinearLayout
+        android:id="@+id/untilDateLinearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Until:"
+            android:textAlignment="center"
+            android:textColor="#CC030000"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/addEventUntilDateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="Date"
+            android:textAlignment="center"
+            android:textColor="#CC070000"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/addEventUntilTimeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="Time"
+            android:textAlignment="center"
+            android:textColor="#CC070000"
+            android:textSize="18sp" />
+
+        <ImageButton
+            android:id="@+id/untilDatePicker"
+            android:layout_width="30dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/calendar_icon" />
+
+        <ImageButton
+            android:id="@+id/untilTimePicker"
+            android:layout_width="30dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/time_icon" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/customizeRecurringSaveButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Save" />
+
+</LinearLayout>

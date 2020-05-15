@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="25dp"
+    android:layout_marginTop="100dp"
+    android:layout_marginRight="25dp"
+    android:layout_marginBottom="100dp"
+    android:background="@android:color/darker_gray"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/updateOnlyThisEventButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update Only This Event" />
+
+    <Button
+        android:id="@+id/updateThisAndRecurringEventsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update This And Recurring Events" />
+</LinearLayout>

@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#6609FF78"
+    tools:context=".AddEventActivity">
+
+    <EditText
+        android:id="@+id/eventNameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:ems="10"
+        android:hint="Event"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/endDateLinearLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/startDateLinearLayout">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="End:"
+            android:textAlignment="center"
+            android:textColor="#CC030000"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/addEventEndDateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:text="Date"
+            android:textAlignment="center"
+            android:textColor="#CC070000"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/addEventEndTimeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Time"
+            android:textAlignment="center"
+            android:textColor="#CC070000"
+            android:textSize="22sp" />
+
+        <ImageButton
+            android:id="@+id/endDatePicker"
+            android:layout_width="30dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/calendar_icon" />
+
+        <ImageButton
+            android:id="@+id/endTimePicker"
+            android:layout_width="30dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/time_icon" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/startDateLinearLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/eventNameText">
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Start:"
+            android:textAlignment="center"
+            android:textColor="#CC030000"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/addEventStartDateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="5"
+            android:text="Date"
+            android:textAlignment="center"
+            android:textColor="#CC070000"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/addEventStartTimeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Time"
+            android:textAlignment="center"
+            android:textColor="#CC070000"
+            android:textSize="22sp" />
+
+        <ImageButton
+            android:id="@+id/startDatePicker"
+            android:layout_width="30dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/calendar_icon" />
+
+        <ImageButton
+            android:id="@+id/startTimePicker"
+            android:layout_width="30dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/time_icon" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/addEventRecurringContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/endDateLinearLayout">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/recurringEventCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recurring Event" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <RadioGroup
+                android:id="@+id/recurringOptionsRadioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/dailyRadioButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Daily" />
+
+                <RadioButton
+                    android:id="@+id/weeklyRadioButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Weekly" />
+
+                <RadioButton
+                    android:id="@+id/monthlyRadioButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Monthly" />
+
+                <RadioButton
+                    android:id="@+id/yearlyRadioButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Yearly" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/customizeButtonContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="1dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/recurringCustomizeButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="100dp"
+                android:layout_marginRight="100dp"
+                android:layout_weight="1"
+                android:text="Customize" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/locationContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addEventReminderOptionsButton">
+
+        >
+
+        <EditText
+            android:id="@+id/locationText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ems="10"
+            android:hint="Location"
+            android:inputType="textPersonName" />
+
+        <ImageButton
+            android:id="@+id/addEventPlacePickerButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:scaleType="fitCenter"
+            app:srcCompat="@android:drawable/ic_menu_mapmode" />
+
+
+    </LinearLayout>
+
+
+
+    <EditText
+        android:id="@+id/phoneText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+        android:hint="Phone"
+        android:inputType="phone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/locationContainer" />
+
+    <EditText
+        android:id="@+id/descriptionText"
+        android:layout_width="336dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="10dp"
+        android:ems="10"
+        android:gravity="start|top"
+        android:hint="Description"
+        android:inputType="textMultiLine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/phoneText" />
+
+    <Button
+        android:id="@+id/saveEventButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#EB6683"
+        android:text="Save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/descriptionText"
+        app:layout_constraintVertical_bias="0.1" />
+
+    <Button
+        android:id="@+id/addEventReminderOptionsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reminder Options"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addEventRecurringContainer" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
