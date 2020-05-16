@@ -3,6 +3,7 @@ package com.example.calendar2;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -41,6 +42,7 @@ import java.util.Map;
 
 public class AddEventActivity extends AppCompatActivity implements View.OnClickListener{
 
+    int PLACE_PICKER_ACTIVITY = 1245;
 
     private DBController dbController;
     private SQLiteDatabase sqLiteDatabase;
@@ -49,6 +51,8 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
     private EditText locationText;
     private EditText phoneText;
     private EditText descriptionText;
+
+    private ImageButton placePickerButton;
 
     private TextView startDateText;
     private TextView startTimeText;
@@ -82,7 +86,6 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
 
     private Button reminderOptionsButton;
 
-
     private Button saveEventButton;
 
     String date = "";
@@ -110,6 +113,11 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
 
     private Map<Integer, Boolean> reminderOpts = new HashMap<>();
     private int foreverMax = 100;
+
+
+    private String address;
+    private Double latitude;
+    private Double longtitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -395,6 +403,31 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 customizePopup.show();
             }
         });
+
+        placePickerButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AddEventActivity.this, PlacePickerActivity.class);
+                startActivityForResult(intent, PLACE_PICKER_ACTIVITY);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PLACE_PICKER_ACTIVITY) {
+            if(resultCode == Activity.RESULT_OK){
+                address = data.getStringExtra("address");
+                latitude = data.getDoubleExtra("latitude",0);
+                longtitude = data.getDoubleExtra("longtitude",0);
+                locationText.setText(address + " Longtitude:" + longtitude + " Latitude:" + latitude);
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
     }
 
     private void EditEvent(boolean updateRecurringEvents){
@@ -674,7 +707,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
         saveEventButton = findViewById(R.id.saveEventButton);
 
 
-
+        placePickerButton = findViewById(R.id.addEventPlacePickerButton);
     }
 
     private void ShowAlert(){
