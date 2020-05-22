@@ -31,7 +31,6 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
     private GoogleMap mMap;
 
     private boolean permissionGranted;
-    Button btn;
     private final static int PLACE_PICKER_REQUEST = 999;
     private final static int LOCATION_REQUEST_CODE = 23;
     @Override
@@ -51,6 +50,9 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
         else{
             permissionGranted = true;
         }
+
+
+
     }
 
 
@@ -102,6 +104,27 @@ public class PlacePickerActivity extends AppCompatActivity implements OnMapReady
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        if(getIntent().hasExtra("Location")){
+            String locationText = getIntent().getStringExtra("Location");
+            String[] s = locationText.split("Longtitude:");
+            if(s.length > 1){
+                try{
+                    String[] a = s[1].split("Latitude:");
+                    LatLng latLng = new LatLng(Double.parseDouble(a[1]),Double.parseDouble(a[0]));
+
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(latLng);
+
+                    markerOptions.title(getAddress(latLng));
+                    mMap.clear();
+                    CameraUpdate location = CameraUpdateFactory.newLatLngZoom(
+                            latLng, 15);
+                    mMap.animateCamera(location);
+                    mMap.addMarker(markerOptions);
+                }catch(Exception e){e.printStackTrace();}
+            }
+        }
+
         if(permissionGranted)
             SetListeners();
     }

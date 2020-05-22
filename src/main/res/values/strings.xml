@@ -1,5 +1,13 @@
 <resources>
     <string name="app_name">Calendar2</string>
+    <string name="channel_name">MyCalendarChannel</string>
+    <string name="channel_description">This is the first channel I did.</string>
+    <string name="eventSaveSuccess">Event saved successfully</string>
+    <string name="eventSaveFailed">Event save failed</string>
+    <string name="eventDeleteSuccess">Event deleted successfully</string>
+    <string name="eventDeleteFail">Event delete failed</string>
+    <string name="eventEditSuccess">Event edited successfully</string>
+    <string name="eventEditFail">Event edit failed</string>
     <string name="monday">M</string>
     <string name="tuesday">Tu</string>
     <string name="wednesday">W</string>

@@ -61,6 +61,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/customReminderOptionDateTimeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0"
@@ -75,7 +76,7 @@
             android:text="Remind:"
             android:textAlignment="center"
             android:textColor="#CC030000"
-            android:textSize="22sp" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/addEventRemindDateText"
@@ -85,7 +86,13 @@
             android:text="Date"
             android:textAlignment="center"
             android:textColor="#CC070000"
-            android:textSize="22sp" />
+            android:textSize="16sp" />
+
+        <View
+            android:id="@+id/view4"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="0.2" />
 
         <TextView
             android:id="@+id/addEventRemindTimeText"
@@ -95,7 +102,7 @@
             android:text="Time"
             android:textAlignment="center"
             android:textColor="#CC070000"
-            android:textSize="22sp" />
+            android:textSize="16sp" />
 
         <ImageButton
             android:id="@+id/remindDatePicker"

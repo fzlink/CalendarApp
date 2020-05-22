@@ -2,14 +2,19 @@ package com.example.calendar2;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -31,6 +36,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.ToggleButton;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -118,6 +125,8 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
     private String address;
     private Double latitude;
     private Double longtitude;
+
+    private int alarmRequestCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,6 +219,19 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
         saveEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                try {
+                    Date s = dtf.parse(startDate + " " + startTime);
+                    Date e = dtf.parse(endDate + " " + endTime);
+                    if(s.after(e)){
+                        ShowAlert();
+                        return;
+                    }
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+
                 if(isEditMode){
                     final Dialog updatePopup = new Dialog(AddEventActivity.this);
                     updatePopup.setContentView(R.layout.item_update_select_popup);
@@ -219,6 +241,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                             EditEvent(false);
                             updatePopup.hide();
                             Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                            intent.putExtra("SnackBarMessage",R.string.eventEditSuccess);
                             startActivity(intent);
                             finish();
                         }
@@ -229,6 +252,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                             EditEvent(true);
                             updatePopup.hide();
                             Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                            intent.putExtra("SnackBarMessage",R.string.eventEditSuccess);
                             startActivity(intent);
                             finish();
                         }
@@ -238,6 +262,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 else{
                     SaveEvent();
                     Intent intent = new Intent(getApplicationContext(),MainActivity.class);
+                    intent.putExtra("SnackBarMessage",R.string.eventSaveSuccess);
                     startActivity(intent);
                     finish();
                 }
@@ -254,7 +279,21 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 reminderPopup.findViewById(R.id.remindTimePicker).setOnClickListener(AddEventActivity.this);
                 reminderDateText = reminderPopup.findViewById(R.id.addEventRemindDateText);
                 reminderTimeText = reminderPopup.findViewById(R.id.addEventRemindTimeText);
+                reminderDateText.setText(startDate);
+                reminderTimeText.setText(startTime);
 
+                CheckBox customCB = reminderPopup.findViewById(R.id.customReminderDateTimeCheckBox);
+                reminderPopup.findViewById(R.id.customReminderOptionDateTimeContainer).setVisibility(LinearLayout.GONE);
+                customCB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        if(isChecked){
+                            reminderPopup.findViewById(R.id.customReminderOptionDateTimeContainer).setVisibility(LinearLayout.VISIBLE);
+                        }else{
+                            reminderPopup.findViewById(R.id.customReminderOptionDateTimeContainer).setVisibility(LinearLayout.GONE);
+                        }
+                    }
+                });
                 reminderPopup.findViewById(R.id.reminderOptionsSaveButton).setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -408,6 +447,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(AddEventActivity.this, PlacePickerActivity.class);
+                intent.putExtra("Location", locationText.getText().toString());
                 startActivityForResult(intent, PLACE_PICKER_ACTIVITY);
             }
         });
@@ -436,11 +476,40 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
         contentValues.put("Location", locationText.getText().toString());
         contentValues.put("Phone", phoneText.getText().toString());
         contentValues.put("Description", descriptionText.getText().toString());
-        contentValues.put("ReminderDateTimes", MakeReminderDateTimesString());
+        String reminderDateTimesString = MakeReminderDateTimesString();
+
+        String[] reminderDateTimesArray = null;
+        if(reminderDateTimesString != null){
+            contentValues.put("ReminderDateTimes",reminderDateTimesString);
+            reminderDateTimesArray = reminderDateTimesString.split(",");
+        }
+
+        SharedPreferences sharedPref = getSharedPreferences("MyPref",Context.MODE_PRIVATE);
+        AlarmManager alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+
+
         if(!updateRecurringEvents){
 
             contentValues.put("StartDateTime", startDate + " " + startTime);
             contentValues.put("EndDateTime", endDate + " " + endTime);
+
+
+            if(reminderDateTimesString != null){
+                for (int i = 0; i< reminderDateTimesArray.length;i++){
+                    int rCode = sharedPref.getInt("alarmRequestCode" + editID + reminderDateTimesArray[i],0);
+                    Intent intent = new Intent(this, AlarmReceiver.class);
+                    PendingIntent alarmIntent = PendingIntent.getBroadcast(this, rCode,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.cancel(alarmIntent);
+                }
+                try {
+                    Date curDate = dtf.parse(startDate + " " + startTime);
+                    SetAlarm(reminderDateTimesString, curDate, editID);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
 
 
             sqLiteDatabase.update("EventCalendar", contentValues, "EventID = ?",new String[] { String.valueOf(editID) });
@@ -466,11 +535,24 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                     Date startDT = dtf.parse(cursor.getString(1));
                     Date endDT = dtf.parse(cursor.getString(2));
                     c.setTimeInMillis(startDT.getTime() + difS);
+                    Date curDate = c.getTime();
                     contentValues.put("StartDateTime", dtf.format(c.getTime()));
                     c.setTimeInMillis(endDT.getTime() + difE);
                     contentValues.put("EndDateTime", dtf.format(c.getTime()));
 
+                    if(reminderDateTimesString != null){
+                        for (int i = 0; i< reminderDateTimesArray.length;i++){
+                            int rCode = sharedPref.getInt("alarmRequestCode" + cursor.getInt(0) + reminderDateTimesArray[i],0);
+                            Intent intent = new Intent(this, AlarmReceiver.class);
+                            PendingIntent alarmIntent = PendingIntent.getBroadcast(this, rCode,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                            alarmManager.cancel(alarmIntent);
+                        }
+                        SetAlarm(reminderDateTimesString,curDate,cursor.getInt(0));
+                    }
+
                     sqLiteDatabase.update("EventCalendar", contentValues, "EventID = ?",new String[] { String.valueOf(cursor.getInt(0))});
+
+
                     cursor.moveToNext();
                 }
             }catch(ParseException e ){ e.printStackTrace(); }
@@ -487,8 +569,11 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
         contentValues.put("Phone", phoneText.getText().toString());
         contentValues.put("Description", descriptionText.getText().toString());
         contentValues.put("IsDone", 0);
+        String reminderDateTimesString = MakeReminderDateTimesString();
+        contentValues.put("ReminderDateTimes",reminderDateTimesString);
+        Date curDate = null;
 
-        contentValues.put("ReminderDateTimes",MakeReminderDateTimesString());
+
 
         sqLiteDatabase.insert("EventCalendar",null, contentValues);
         String query = "SELECT last_insert_rowid() FROM EventCalendar";
@@ -496,9 +581,18 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
         cursor.moveToFirst();
         query = "UPDATE EventCalendar SET OriginEventID = " + cursor.getInt(0) + " WHERE EventID = " + cursor.getInt(0);
         sqLiteDatabase.execSQL(query);
+
+        try {
+            curDate = dtf.parse(startDate + " " + startTime);
+            SetAlarm(reminderDateTimesString,curDate,cursor.getInt(0));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
         if(recurringEventCheckBox.isChecked()){
             SaveRecurringEvents();
         }
+
 
     }
     private String MakeReminderDateTimesString(){
@@ -510,7 +604,11 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 }
             }
         }else{
-            reminderDateTimes += "default";
+            if(isEditMode){
+                return null;
+            }else{
+                reminderDateTimes += "default";
+            }
         }
         return reminderDateTimes;
     }
@@ -532,7 +630,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                     Date s = dtf.parse(startDate + " " + startTime);
                     Date r = dtf.parse(reminderDate + " " + reminderTime);
                     long dif = s.getTime() - r.getTime();
-                    return dif + "Millis";
+                    return String.valueOf(dif);
                 }catch(ParseException e){e.printStackTrace();}
             default:
                 return "";
@@ -586,7 +684,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
             Date eDate = null;
             if(duration == "forever"){
                 c.setTime(curDate);
-                c.add(Calendar.YEAR,3);
+                c.add(Calendar.YEAR,100);
                 eDate = c.getTime();
             }
             else if(duration == "until"){
@@ -613,6 +711,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
             long dif = e.getTime() - s.getTime();
 
             int maxCount = 0;
+            recurringDayInd++;
             while(curDate.before(eDate) && maxCount < foreverMax){
                 ContentValues contentValues = new ContentValues();
                 Date cd = curDate;
@@ -627,8 +726,16 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 contentValues.put("Description", descriptionText.getText().toString());
                 contentValues.put("IsDone", 0);
                 contentValues.put("OriginEventID", cursor.getInt(0));
-                contentValues.put("ReminderDateTimes", MakeReminderDateTimesString());
+                String reminderDateTimesString = MakeReminderDateTimesString();
+                contentValues.put("ReminderDateTimes", reminderDateTimesString);
+
                 sqLiteDatabase.insert("EventCalendar",null, contentValues);
+
+                String query2 = "SELECT last_insert_rowid() FROM EventCalendar";
+                Cursor cursor2 = sqLiteDatabase.rawQuery(query2,null);
+                cursor2.moveToFirst();
+                SetAlarm(reminderDateTimesString,curDate,cursor2.getInt(0));
+
                 if(weeklyRadioButton.isChecked() && recurringDaysInWeek.size()>0){
                     if(recurringDayInd >= recurringDaysInWeek.size()){
                         recurringDayInd = 0;
@@ -713,7 +820,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
     private void ShowAlert(){
         AlertDialog.Builder builder = new AlertDialog.Builder(AddEventActivity.this);
         builder.setTitle("Invalid Date");
-        builder.setMessage("End date must be after start date");
+        builder.setMessage("End or Until date must be after start date");
         builder.setNeutralButton("Okay", null);
         builder.show();
     }
@@ -737,7 +844,7 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                                           int monthOfYear, int dayOfMonth) {
                         String d = "";
                         String month = "";
-                        if(monthOfYear < 10)
+                        if(monthOfYear < 9)
                             month += "0";
                         month += (monthOfYear+1);
                         String day = "";
@@ -814,13 +921,13 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 try {
                     Date newStart = dtf.parse(d + " " + startTime);
                     Date end = dtf.parse(endDate + " " + endTime);
-                    if(newStart.after(end)){
-                        ShowAlert();
-                    }
-                    else{
+                    //if(newStart.after(end)){
+                    //    ShowAlert();
+                    //}
+                    //else{
                         startDate = d;
                         startDateText.setText(startDate);
-                    }
+                    //}
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -829,13 +936,13 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 try {
                     Date start = dtf.parse(startDate + " " + startTime);
                     Date newEnd = dtf.parse(d + " " + endTime);
-                    if(start.after(newEnd)){
-                        ShowAlert();
-                    }
-                    else{
+                    //if(start.after(newEnd)){
+                    //    ShowAlert();
+                    //}
+                    //else{
                         endDate = d;
                         endDateText.setText(endDate);
-                    }
+                    //}
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -868,13 +975,13 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 try {
                     Date newStart = dtf.parse(startDate + " " + t);
                     Date end = dtf.parse(endDate + " " + endTime);
-                    if(newStart.after(end)){
-                        ShowAlert();
-                    }
-                    else{
+                    //if(newStart.after(end)){
+                    //    ShowAlert();
+                    //}
+                    //else{
                         startTime = t;
                         startTimeText.setText(startTime);
-                    }
+                    //}
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -883,13 +990,13 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 try {
                     Date start = dtf.parse(startDate + " " + startTime);
                     Date newEnd = dtf.parse(endDate + " " + t);
-                    if(start.after(newEnd)){
-                        ShowAlert();
-                    }
-                    else{
+                    //if(start.after(newEnd)){
+                    //    ShowAlert();
+                    //}
+                    //else{
                         endTime = t;
                         endTimeText.setText(endTime);
-                    }
+                    //}
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -915,4 +1022,66 @@ public class AddEventActivity extends AppCompatActivity implements View.OnClickL
                 break;
         }
     }
+
+
+    private ArrayList<PendingIntent> pendingIntents = new ArrayList<>();
+
+    private void SetAlarm(String reminderString, Date curDate, int eventID){
+        AlarmManager alarmMgr = (AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        String[] reminderStringArray =  reminderString.split(",");
+
+        SharedPreferences sharedPref = getSharedPreferences("MyPref", Context.MODE_PRIVATE);
+        int rCode = sharedPref.getInt("alarmRequestCode", 0);
+
+        for(int i=0; i< reminderStringArray.length; i++){
+            long millisBefore = GetReminderOffsetFromString(reminderStringArray[i],curDate);
+            Intent intent = new Intent(getApplicationContext(), AlarmReceiver.class);
+            intent.putExtra("eventName", eventNameText.getText().toString());
+            intent.putExtra("eventDescription", descriptionText.getText().toString());
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putInt("alarmRequestCode" + eventID + reminderStringArray[i], rCode);
+            editor.commit();
+            PendingIntent alarmIntent = PendingIntent.getBroadcast(getApplicationContext(), rCode++, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            Calendar c = Calendar.getInstance();
+            long curMillis = curDate.getTime();
+            c.setTimeInMillis(curMillis - millisBefore);
+
+            alarmMgr.set(AlarmManager.RTC_WAKEUP,c.getTimeInMillis(),alarmIntent);
+
+            pendingIntents.add(alarmIntent);
+        }
+
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt("alarmRequestCode", rCode);
+        editor.commit();
+
+
+
+
+    }
+
+    private long GetReminderOffsetFromString(String reminder,Date curDate){
+        int millisInMin = 60 * 1000;
+        switch(reminder){
+            case "5Min":
+                return 5 * millisInMin;
+            case "15Min":
+                return 15 * millisInMin;
+            case "1Hour":
+                return 60 * millisInMin;
+            case "1Day":
+                return 60 * 24 * millisInMin;
+            case "0Min":
+                return 0;
+            case "default":
+                SharedPreferences sharedPreferences = getSharedPreferences("MyPref",Context.MODE_PRIVATE);
+                String defaultReminder = sharedPreferences.getString("DefaultReminderOption","0Min");
+                return GetReminderOffsetFromString(defaultReminder,curDate);
+            default:
+                return Long.parseLong(reminder);
+        }
+    }
+
+
+
 }

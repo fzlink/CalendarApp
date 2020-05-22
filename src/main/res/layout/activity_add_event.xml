@@ -2,22 +2,22 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/addEventActivityContent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#6609FF78"
     tools:context=".AddEventActivity">
 
     <EditText
         android:id="@+id/eventNameText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="4dp"
         android:ems="10"
         android:hint="Event"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
 
     <LinearLayout
         android:id="@+id/endDateLinearLayout"
@@ -34,10 +34,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="End:"
+            android:text="End:  "
             android:textAlignment="center"
             android:textColor="#CC030000"
-            android:textSize="22sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/addEventEndDateText"
@@ -47,7 +47,7 @@
             android:text="Date"
             android:textAlignment="center"
             android:textColor="#CC070000"
-            android:textSize="22sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/addEventEndTimeText"
@@ -57,7 +57,7 @@
             android:text="Time"
             android:textAlignment="center"
             android:textColor="#CC070000"
-            android:textSize="22sp" />
+            android:textSize="18sp" />
 
         <ImageButton
             android:id="@+id/endDatePicker"
@@ -65,6 +65,7 @@
             android:layout_height="50dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
+            android:backgroundTint="#E91E63"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/calendar_icon" />
 
@@ -74,6 +75,7 @@
             android:layout_height="50dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
+            android:backgroundTint="#E91E63"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/time_icon" />
     </LinearLayout>
@@ -96,7 +98,7 @@
             android:text="Start:"
             android:textAlignment="center"
             android:textColor="#CC030000"
-            android:textSize="22sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/addEventStartDateText"
@@ -106,7 +108,7 @@
             android:text="Date"
             android:textAlignment="center"
             android:textColor="#CC070000"
-            android:textSize="22sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/addEventStartTimeText"
@@ -116,7 +118,7 @@
             android:text="Time"
             android:textAlignment="center"
             android:textColor="#CC070000"
-            android:textSize="22sp" />
+            android:textSize="18sp" />
 
         <ImageButton
             android:id="@+id/startDatePicker"
@@ -124,6 +126,7 @@
             android:layout_height="50dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
+            android:backgroundTint="#E91E63"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/calendar_icon" />
 
@@ -133,6 +136,7 @@
             android:layout_height="50dp"
             android:layout_weight="1"
             android:adjustViewBounds="true"
+            android:backgroundTint="#E91E63"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/time_icon" />
 
@@ -179,6 +183,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:checked="true"
                     android:text="Daily" />
 
                 <RadioButton
@@ -219,6 +224,7 @@
                 android:layout_marginLeft="100dp"
                 android:layout_marginRight="100dp"
                 android:layout_weight="1"
+                android:backgroundTint="#E91E63"
                 android:text="Customize" />
         </LinearLayout>
     </LinearLayout>
@@ -238,18 +244,20 @@
 
         <EditText
             android:id="@+id/locationText"
-            android:layout_width="wrap_content"
+            android:layout_width="264dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:ems="10"
             android:hint="Location"
-            android:inputType="textPersonName" />
+            android:inputType="textPersonName"
+            android:textSize="18sp" />
 
         <ImageButton
             android:id="@+id/addEventPlacePickerButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="0"
+            android:backgroundTint="#E91E63"
             android:scaleType="fitCenter"
             app:srcCompat="@android:drawable/ic_menu_mapmode" />
 
@@ -257,11 +265,10 @@
     </LinearLayout>
 
 
-
     <EditText
         android:id="@+id/phoneText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="320dp"
+        android:layout_height="41dp"
         android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Phone"
@@ -272,7 +279,7 @@
 
     <EditText
         android:id="@+id/descriptionText"
-        android:layout_width="336dp"
+        android:layout_width="320dp"
         android:layout_height="56dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="16dp"
@@ -289,7 +296,7 @@
         android:id="@+id/saveEventButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="#EB6683"
+        android:backgroundTint="#E91E63"
         android:text="Save"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -300,11 +307,31 @@
 
     <Button
         android:id="@+id/addEventReminderOptionsButton"
-        android:layout_width="wrap_content"
+        android:layout_width="209dp"
         android:layout_height="wrap_content"
+        android:backgroundTint="#E91E63"
         android:text="Reminder Options"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/addEventRecurringContainer" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#0FE6C5"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ADD EVENT"
+            android:textSize="26sp" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

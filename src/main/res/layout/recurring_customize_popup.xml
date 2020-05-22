@@ -34,6 +34,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:inputType="number"
+            android:text="1"
             android:textAlignment="center" />
 
         <TextView

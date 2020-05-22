@@ -1,8 +1,12 @@
 package com.example.calendar2;
 
+import android.app.AlarmManager;
 import android.app.Dialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.icu.text.SimpleDateFormat;
 import android.view.LayoutInflater;
@@ -14,8 +18,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
@@ -83,13 +88,22 @@ public class EventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                     sqLiteDatabase.execSQL(query);
                 }
             });
-            ((EventViewHolder) holder).editButton.setOnClickListener(new View.OnClickListener() {
+            ((EventViewHolder) holder).shareButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent editEventIntent = new Intent(context, AddEventActivity.class);
-                    editEventIntent.putExtra("ISEDIT", true);
-                    editEventIntent.putExtra("EVENTID", selectedEvent.getEventID());
-                    context.startActivity(editEventIntent);
+                    Intent sendIntent = new Intent();
+                    sendIntent.setAction(Intent.ACTION_SEND);
+                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, selectedEvent.getEventName());
+                    String[] t =  selectedEvent.getLocation().split("Longtitude:");
+                    if(t.length > 1){
+                        String[] a = t[1].split("Latitude:");
+                        String location = " https://maps.google.com/?q=" + Double.parseDouble(a[1]) + "," + Double.parseDouble(a[0]);
+                        sendIntent.putExtra(Intent.EXTRA_TEXT, selectedEvent.getDescription() + location);
+                    }else{
+                        sendIntent.putExtra(Intent.EXTRA_TEXT, selectedEvent.getDescription());
+                    }
+                    sendIntent.setType("text/plain");
+                    context.startActivity(sendIntent);
                 }
             });
             ((EventViewHolder) holder).deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -105,13 +119,29 @@ public class EventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                             try{
                                 dbController = new DBController(context, "CalendarDB" , null, 1);
                                 sqLiteDatabase = dbController.getWritableDatabase();
-                                String query = "DELETE FROM EventCalendar WHERE EventID = " + selectedEvent.getEventID();
+                                String query = "SELECT ReminderDateTimes FROM EventCalendar WHERE EventID = " + selectedEvent.getEventID();
+                                Cursor cursor = sqLiteDatabase.rawQuery(query,null);
+                                cursor.moveToFirst();
+                                SharedPreferences sharedPref = context.getSharedPreferences("MyPref",Context.MODE_PRIVATE);
+                                String reminderDateTimes = cursor.getString(0);
+                                String[] reminderDateTimesArray = reminderDateTimes.split(",");
+                                AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+                                for (int i = 0; i< reminderDateTimesArray.length; i++){
+                                    int rCode = sharedPref.getInt("alarmRequestCode" + selectedEvent.getEventID() + reminderDateTimesArray[i],0);
+                                    Intent intent = new Intent(context, AlarmReceiver.class);
+                                    PendingIntent alarmIntent = PendingIntent.getBroadcast(context, rCode,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                                    alarmManager.cancel(alarmIntent);
+                                }
+
+                                query = "DELETE FROM EventCalendar WHERE EventID = " + selectedEvent.getEventID();
                                 sqLiteDatabase.execSQL(query);
                             }catch(Exception e){
                                 e.printStackTrace();
                             }
-                            deletePopup.hide();
+                            deletePopup.dismiss();
+                            Snackbar.make(((MainActivity)context).findViewById(R.id.mainActivityContent),R.string.eventDeleteSuccess,Snackbar.LENGTH_SHORT).show();
                             ((MainActivity)context).ReadDatabase();
+
                         }
                     });
                     deletePopup.findViewById(R.id.deleteThisAndRecurringEventsButton).setOnClickListener(new View.OnClickListener() {
@@ -120,12 +150,32 @@ public class EventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                             try{
                                 dbController = new DBController(context, "CalendarDB" , null, 1);
                                 sqLiteDatabase = dbController.getWritableDatabase();
-                                String query = "DELETE FROM EventCalendar WHERE OriginEventID = " + selectedEvent.getOriginEventID();
+
+                                String query = "SELECT EventID, ReminderDateTimes FROM EventCalendar WHERE OriginEventID = " + selectedEvent.getOriginEventID();
+                                Cursor cursor = sqLiteDatabase.rawQuery(query,null);
+                                cursor.moveToFirst();
+                                AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+                                SharedPreferences sharedPref = context.getSharedPreferences("MyPref",Context.MODE_PRIVATE);
+                                while(!cursor.isAfterLast()){
+                                    String reminderDateTimes = cursor.getString(1);
+                                    String[] reminderDateTimesArray = reminderDateTimes.split(",");
+
+                                    for (int i = 0; i< reminderDateTimesArray.length; i++){
+                                        int rCode = sharedPref.getInt("alarmRequestCode" + cursor.getInt(0) + reminderDateTimesArray[i],0);
+                                        Intent intent = new Intent(context, AlarmReceiver.class);
+                                        PendingIntent alarmIntent = PendingIntent.getBroadcast(context, rCode,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                                        alarmManager.cancel(alarmIntent);
+                                    }
+                                    cursor.moveToNext();
+                                }
+
+                                query = "DELETE FROM EventCalendar WHERE OriginEventID = " + selectedEvent.getOriginEventID();
                                 sqLiteDatabase.execSQL(query);
                             }catch(Exception e){
                                 e.printStackTrace();
                             }
-                            deletePopup.hide();
+                            deletePopup.dismiss();
+                            Snackbar.make(((MainActivity)context).findViewById(R.id.mainActivityContent),R.string.eventDeleteSuccess,Snackbar.LENGTH_SHORT).show();
                             ((MainActivity)context).ReadDatabase();
                         }
                     });
@@ -162,15 +212,17 @@ public class EventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     class EventViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         TextView eventName;
         CheckBox isDoneCheckBox;
-        ImageButton editButton, deleteButton;
+        ImageButton shareButton, deleteButton;
         OnCalendarEventListener onCalendarEventListener;
 
         public EventViewHolder(View itemView, OnCalendarEventListener onCalendarEventListener){
             super(itemView);
             eventName = itemView.findViewById(R.id.eventItemText);
             isDoneCheckBox = itemView.findViewById(R.id.eventItemIsDoneCheckBox);
-            editButton = itemView.findViewById(R.id.eventListEditButton);
+            shareButton = itemView.findViewById(R.id.eventListShareButton);
             deleteButton = itemView.findViewById(R.id.eventListDeleteButton);
+            this.onCalendarEventListener = onCalendarEventListener;
+            itemView.setOnClickListener(this);
         }
 
         public void setData(Event selectedEvent, int position){
@@ -180,7 +232,7 @@ public class EventAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
         @Override
         public void onClick(View v){
-
+            onCalendarEventListener.OnCalendarEventClick(getAdapterPosition());
         }
     }
 

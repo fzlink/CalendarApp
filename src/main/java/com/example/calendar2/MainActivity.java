@@ -2,23 +2,37 @@ package com.example.calendar2;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.icu.text.DateFormatSymbols;
 import android.icu.text.SimpleDateFormat;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -36,6 +50,8 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements EventAdapter.OnCalendarEventListener{
 
+    public static final String CHANNEL_ID = "780";
+
     private DBController dbController;
     private SQLiteDatabase sqLiteDatabase;
 
@@ -46,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
     private Button weeklyButton;
     private Button monthlyButton;
     private Button yearlyButton;
+    private ImageButton settingsButton;
 
     private FloatingActionButton addEventFloatingButton;
     private RecyclerView eventRecyclerView;
@@ -57,12 +74,27 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
     ZoneId defaultZoneId = ZoneId.systemDefault();
 
 
+    private ArrayList<Event> eventList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         MakeUIReferences();
+
+        if(getIntent().hasExtra("SnackBarMessage")){
+            int stringID = getIntent().getIntExtra("SnackBarMessage",0);
+            Snackbar.make(findViewById(R.id.mainActivityContent),stringID,Snackbar.LENGTH_SHORT).show();
+        }
+
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPref",Context.MODE_PRIVATE);
+        boolean isDarkModeOn = sharedPreferences.getBoolean("DarkMode",false);
+        if(isDarkModeOn){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }else{
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
 
         dailyButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -129,6 +161,14 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
             }
         });
 
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
+
         //sqLiteDatabase.execSQL("DROP TABLE IF EXISTS EventCalendar");
         //sqLiteDatabase.execSQL("delete from EventCalendar");
 
@@ -138,6 +178,38 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
         selectedDate = df.format(d);
         ReadDatabase();
 
+
+        //NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        //notificationManager.deleteNotificationChannel(CHANNEL_ID);
+
+        createNotificationChannel();
+
+
+    }
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = getString(R.string.channel_name);
+            String description = getString(R.string.channel_description);
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            //Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            /*AudioAttributes att = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build();*/
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            //channel.setSound(alarmSound,att);
+            channel.enableVibration(true);
+            channel.enableLights(true);
+            channel.setLightColor(Color.WHITE);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
     }
 
     private void MakeUIReferences() {
@@ -147,6 +219,7 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
         weeklyButton = findViewById(R.id.weeklyButton);
         monthlyButton = findViewById(R.id.monthlyButton);
         yearlyButton = findViewById(R.id.yearlyButton);
+        settingsButton = findViewById(R.id.settingsButton);
 
         addEventFloatingButton = findViewById(R.id.addEventFloatingButton);
 
@@ -155,11 +228,11 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
 
     public void ReadDatabase(){
 
-        ArrayList<Event> eventList = new ArrayList<>();
+        eventList = new ArrayList<>();
         Calendar c = Calendar.getInstance();
         c.setFirstDayOfWeek(Calendar.MONDAY);
-        String start = df.format(FindStartDate()) + " 00:00";
-        String end = df.format(FindFinishDate()) + " 00:00";
+        String start = dtf.format(FindStartDate());
+        String end = dtf.format(FindFinishDate());
 
         String query = "SELECT EventID, StartDateTime, EndDateTime, Event, IsDone, OriginEventID, Description, Location, Phone FROM EventCalendar WHERE StartDateTime BETWEEN '" + start + "' AND '" + end + "'";
 
@@ -193,10 +266,10 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
         }
 
 
-        EventAdapter eventAdapter = new EventAdapter(this,eventList,this);
+        EventAdapter eventAdapter = new EventAdapter(this,eventList,MainActivity.this);
         eventRecyclerView.setAdapter(eventAdapter);
 
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(MainActivity.this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         eventRecyclerView.setLayoutManager(linearLayoutManager);
 
@@ -225,18 +298,27 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
         }
         else if(groupType == "monthly"){
             Calendar c = Calendar.getInstance();
+            c.setFirstDayOfWeek(Calendar.MONDAY);
             c.setTime(startDate);
+            int max = 4;
+            if(c.getActualMaximum(Calendar.DAY_OF_MONTH) > 28){
+                max = 5;
+            }
             Date finishWeek;
             Date startWeek;
             int j = 0;
-            for (int i = 0; i<4; i++){
+            for (int i = 0; i<max; i++){
                 startWeek = c.getTime();
-                c.add(Calendar.DAY_OF_MONTH,6);
+                if(i < max-1){
+                    c.add(Calendar.DAY_OF_MONTH,6);
+                }else{
+                    c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+                }
                 finishWeek = c.getTime();
                 c.add(Calendar.DAY_OF_MONTH,1);
                 Event event = new Event();
                 event.setViewType(1);
-                event.setEventName(df.format(startWeek) + " " + df.format(finishWeek));
+                event.setEventName(df.format(startWeek) + " -> " + df.format(finishWeek));
                 eventsWithHeaders.add(event);
                 try{
                     while(j < eventList.size() && df.parse(eventList.get(j).getStartDateTime()).before(c.getTime())){
@@ -309,22 +391,39 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
         try{
             final DayOfWeek firstDayOfWeek = DayOfWeek.MONDAY;
             final DayOfWeek lastDayOfWeek = DayOfWeek.SUNDAY;
-
+            Calendar c = Calendar.getInstance();
             switch (groupType){
                 case "daily":
                     date = df.parse(selectedDate);
+
+                    c.setTime(date);
+                    c.set(Calendar.HOUR_OF_DAY,23);
+                    c.set(Calendar.MINUTE,59);
+                    date = c.getTime();
                     return date;
                 case "weekly":
                     LocalDate ld = LocalDate.parse(selectedDate,DateTimeFormatter.ofPattern("yyyy-MM-dd")).with(TemporalAdjusters.nextOrSame(lastDayOfWeek));
                     date = Date.from(ld.atStartOfDay(defaultZoneId).toInstant());
+                    c.setTime(date);
+                    c.set(Calendar.HOUR_OF_DAY,23);
+                    c.set(Calendar.MINUTE,59);
+                    date = c.getTime();
                     return date;
                 case "monthly":
                     LocalDate lastDayofMonth = LocalDate.parse(selectedDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).with(TemporalAdjusters.lastDayOfMonth());
                     date = Date.from(lastDayofMonth.atStartOfDay(defaultZoneId).toInstant());
+                    c.setTime(date);
+                    c.set(Calendar.HOUR_OF_DAY,23);
+                    c.set(Calendar.MINUTE,59);
+                    date = c.getTime();
                     return date;
                 case "yearly":
                     LocalDate lastDayofYear = LocalDate.parse(selectedDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).with(TemporalAdjusters.lastDayOfYear());
                     date = Date.from(lastDayofYear.atStartOfDay(defaultZoneId).toInstant());
+                    c.setTime(date);
+                    c.set(Calendar.HOUR_OF_DAY,23);
+                    c.set(Calendar.MINUTE,59);
+                    date = c.getTime();
                     return date;
                 default:
                     return df.parse(selectedDate);
@@ -337,6 +436,10 @@ public class MainActivity extends AppCompatActivity implements EventAdapter.OnCa
 
     @Override
     public void OnCalendarEventClick(int position) {
-
+        Event selectedEvent = eventList.get(position);
+        Intent editEventIntent = new Intent(this, AddEventActivity.class);
+        editEventIntent.putExtra("ISEDIT", true);
+        editEventIntent.putExtra("EVENTID", selectedEvent.getEventID());
+        startActivity(editEventIntent);
     }
 }

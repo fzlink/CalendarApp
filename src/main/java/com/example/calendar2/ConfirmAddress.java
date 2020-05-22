@@ -36,11 +36,8 @@ public class ConfirmAddress extends DialogFragment implements
         android.view.View.OnClickListener, OnMapReadyCallback {
 
     public Activity c;
-    public Dialog d;
-    public Button yes, no;
 
     private GoogleMap mMap;
-    MapView mapView;
     Double Lat;
     Double Long;
     String Address;
